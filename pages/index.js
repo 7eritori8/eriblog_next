@@ -1,8 +1,9 @@
+import { createClient } from '../contentful-info'
 import Header from "../components/Header";
 import MainImage from "../components/MainImage";
 import ArticleCard from "../components/ArticleCard";
-
-export default function Home() {
+import ViewOneLineContents from "../components/ViewOneLineContents"
+export default function Home({ posts }) {
   return (
     <>
       <Header />
@@ -21,14 +22,58 @@ export default function Home() {
         <h2 className="fc-white"><span className="fc-red">１</span>行日記</h2>
         <div className="bc-gray content-padding">
           <div className="bc-white one-line-wrapper">
-            <h3 className="one-line-title">徒然なるままに</h3>
-            <p className="one-line-content one-line-border-bottom">つれづれなるままに、日暮らし硯に向かひて<span className="fc-green">2022/11/08</span></p>
-            <p className="one-line-content one-line-border-bottom">心にうつりゆくよしなしごとを、そこはかとなく書きつくれば、<span className="fc-green">2022/11/08</span></p>
-            <p className="one-line-content one-line-border- mb-2">あやしうこそものぐるほしけれ<span className="fc-green">2022/11/08</span></p>
+
+            <ViewOneLineContents posts={posts} />
           </div>
         </div>
       </div>
 
     </>
   )
+}
+
+// ContentfulAPIから１行日記データを取得する処理
+const getAllPostsFromAPI = async () => {
+  try {
+    // データはresponseに格納
+    const response = await createClient().getEntries({
+      content_type: 'oneLinePost'
+    })
+      .catch((error) => {
+        console.log(error)
+        return error
+      })
+    // posts：id、作成日時、投稿テキストのオブジェクトが入った配列
+    console.log({ response })
+    const posts = response.items.map((responseItem) => {
+      return (
+        {
+          id: responseItem.sys.id,
+          createdAt: responseItem.sys.createdAt,
+          // updatedAt: responseItems.sys.updatedAt,
+          ...responseItem.fields,
+        }
+      )
+    })
+    return (posts)
+  } catch (error) {
+    throw new Error(error.message)
+  }
+}
+
+export async function getStaticProps() {
+  const posts = await getAllPostsFromAPI();
+  // postsが無ければ404にリダイレクトする
+  if (!posts) {
+    return {
+      notFound: true
+    }
+  }
+  // 子コンポーネントに渡す用にpostsを返す
+  console.log(posts)
+  return {
+    props: {
+      posts
+    }
+  }
 }
