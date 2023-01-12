@@ -69,8 +69,6 @@ const getAllPostsFromAPI = async () => {
 
 export async function getStaticProps() {
   const posts = await getAllPostsFromAPI();
-  console.log(posts.oneLinePosts)
-
   // postsが無ければ404にリダイレクトする
   if (!posts) {
     return {
