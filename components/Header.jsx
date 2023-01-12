@@ -1,10 +1,13 @@
+import Link from "next/link"
 export default function Header() {
     return (
         <>
             <header>
-                <a href="/"><div className="logo"><img src="/logo.png" alt="logo" /></div></a>
+                <Link href="/">
+                    <a><div className="logo"><img src="/logo.png" alt="logo" /></div></a>
+                </Link>
                 <div className="header-link">
-                    <a href="profile" className="fc-white">about me</a>
+                    <Link href="/profile"><a className="fc-white">about me</a></Link>
                 </div>
             </header>
         </>

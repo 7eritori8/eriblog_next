@@ -1,5 +1,6 @@
 import Header from "../components/Header";
 import MainImage from "../components/MainImage";
+import Link from 'next/link'
 
 export default function detail() {
     return (
@@ -16,7 +17,7 @@ export default function detail() {
                     <div className="articleText">
                         <h2 className="textHeader"><span>◆</span>記事見出し</h2>
                         <p>text text text text text text text text text text  本文    </p>
-                        <p>本文本文　<a href="/">リンク</a>text</p>
+                        <p>本文本文　<Link href="/"><a>リンク</a></Link>text</p>
                     </div>
                 </div>
             </div>

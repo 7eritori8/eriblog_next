@@ -3,7 +3,7 @@ import Header from "../components/Header";
 import MainImage from "../components/MainImage";
 import ArticleCard from "../components/ArticleCard";
 import ViewOneLineContents from "../components/ViewOneLineContents"
-export default function Home({ posts }) {
+export default function Home({ blogPosts, onLinePosts }) {
   return (
     <>
       <Header />
@@ -11,11 +11,7 @@ export default function Home({ posts }) {
       <div className="contents-area mb-6">
         <h2 className="fc-white">最<span className="fc-red">新</span>記事</h2>
         <div className="article-cards bc-gray content-padding">
-          <ArticleCard />
-          <ArticleCard />
-          <ArticleCard />
-          <ArticleCard />
-          <ArticleCard />
+          <ArticleCard posts={blogPosts} />
         </div>
       </div>
       <div className="contents-area mb-6">
@@ -23,7 +19,7 @@ export default function Home({ posts }) {
         <div className="bc-gray content-padding">
           <div className="bc-white one-line-wrapper">
 
-            <ViewOneLineContents posts={posts} />
+            <ViewOneLineContents posts={onLinePosts} />
           </div>
         </div>
       </div>
@@ -37,25 +33,35 @@ const getAllPostsFromAPI = async () => {
   try {
     // データはresponseに格納
     const response = await createClient().getEntries({
-      content_type: 'oneLinePost'
     })
       .catch((error) => {
         console.log(error)
         return error
       })
-    // posts：id、作成日時、投稿テキストのオブジェクトが入った配列
-    console.log({ response })
-    const posts = response.items.map((responseItem) => {
-      return (
-        {
-          id: responseItem.sys.id,
-          createdAt: responseItem.sys.createdAt,
-          // updatedAt: responseItems.sys.updatedAt,
-          ...responseItem.fields,
-        }
-      )
+    // id、作成日時、投稿テキストのオブジェクトが入った配列を１行日記とブログに分けて作成
+    const blogPosts = response.items.filter((responseItem) => {
+      return (responseItem.sys.contentType.sys.id === 'blogPost')
+    }).map((postItem) => {
+      return ({
+        id: postItem.sys.id,
+        createdAt: postItem.sys.createdAt,
+        ...postItem.fields,
+      })
     })
-    return (posts)
+    const oneLinePosts = response.items.filter((responseItem) => {
+      return (responseItem.sys.contentType.sys.id === 'oneLinePost')
+    }).map((postItem) => {
+      return ({
+        id: postItem.sys.id,
+        createdAt: postItem.sys.createdAt,
+        ...postItem.fields,
+      })
+    })
+    return ({
+      oneLinePosts: oneLinePosts,
+      blogPosts: blogPosts
+    }
+    )
   } catch (error) {
     throw new Error(error.message)
   }
@@ -63,17 +69,20 @@ const getAllPostsFromAPI = async () => {
 
 export async function getStaticProps() {
   const posts = await getAllPostsFromAPI();
+  console.log(posts.oneLinePosts)
+
   // postsが無ければ404にリダイレクトする
   if (!posts) {
     return {
       notFound: true
     }
   }
-  // 子コンポーネントに渡す用にpostsを返す
-  console.log(posts)
+  // 子コンポーネントに渡す用のデータ
   return {
     props: {
-      posts
+      onLinePosts: posts.oneLinePosts,
+      blogPosts: posts.blogPosts
     }
   }
 }
+
